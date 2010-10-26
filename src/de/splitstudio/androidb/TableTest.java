@@ -31,14 +31,14 @@ public class TableTest extends AndroidTestCase {
 	public void testConstructor_createTable() {
 		String tableName = TableExample.class.getSimpleName();
 		new TableExample(db);
-		assertEquals(1, getTableCount(tableName));
+		assertEquals(1, getTablesInMetadataCount(tableName));
 	}
 
 	public void testConstructor_tableCreated_noTableInDb() {
 		String tableName = TableExample.class.getSimpleName();
 		Table.createdTables.add(tableName);
 		new TableExample(db);
-		assertEquals(0, getTableCount(tableName));
+		assertEquals(0, getTablesInMetadataCount(tableName));
 	}
 
 	public void testConstructor_tableWithNewId_callOnUpgrade() {
@@ -48,10 +48,10 @@ public class TableTest extends AndroidTestCase {
 		metadata.setTable(tableName).setTableVersion(1).save();
 
 		new TableExample(db);
-		assertEquals(0, getTableCount(tableName));
+		assertEquals(0, getTablesInMetadataCount(tableName));
 	}
 
-	private int getTableCount(final String table) {
+	private int getTablesInMetadataCount(final String table) {
 		String sql = String.format("SELECT name FROM sqlite_master WHERE type='table' and name='%s'", table);
 		Cursor c = db.rawQuery(sql, null);
 		return c.getCount();
