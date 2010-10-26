@@ -51,9 +51,46 @@ public class TableTest extends AndroidTestCase {
 		assertEquals(0, getTablesInMetadataCount(tableName));
 	}
 
+	public void test_isNew_withId_false() {
+		Table table = new TableExample(db);
+		table._id = 1L;
+		assertEquals(false, table.isNew());
+	}
+
+	public void test_isNew_withoutId_true() {
+		Table table = new TableExample(db);
+		assertEquals(true, table.isNew());
+	}
+
+	public void test_isNew_withZeroId_true() {
+		Table table = new TableExample(db);
+		table._id = 0L;
+		assertEquals(true, table.isNew());
+	}
+
+	public void test_all_emptyTable_emptyCursor() {
+		Table table = new TableExample(db);
+		Cursor c = table.all();
+		assertEquals(0, c.getCount());
+	}
+
+	public void test_all_threeRows_threeRows() {
+		Table table = new TableExample(db);
+
+		table.insert();
+		table._id = null;
+		table.insert();
+		table._id = null;
+		table.insert();
+
+		Cursor c = table.all();
+		assertEquals(3, c.getCount());
+	}
+
 	private int getTablesInMetadataCount(final String table) {
 		String sql = String.format("SELECT name FROM sqlite_master WHERE type='table' and name='%s'", table);
 		Cursor c = db.rawQuery(sql, null);
 		return c.getCount();
 	}
+
 }
