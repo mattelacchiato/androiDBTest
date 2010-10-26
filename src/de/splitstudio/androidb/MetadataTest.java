@@ -32,7 +32,7 @@ public class MetadataTest extends AndroidTestCase {
 	}
 
 	public void testConstructor_createMetadataTable() {
-		Table table = new TableColumnWithAnnotations(db);
+		Table table = new TableExample(db);
 		Metadata metadata = new Metadata(db);
 		assertTrue(metadata.findByName("TableColumnWithAnnotations"));
 		assertEquals(table.getVersion(), metadata.getTableVersion());

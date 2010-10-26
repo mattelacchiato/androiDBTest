@@ -24,20 +24,30 @@ public class TableTest extends AndroidTestCase {
 	}
 
 	public void testConstructorWithContext_createDbFile() {
-		new TableColumnWithAnnotations(getContext());
+		new TableExample(getContext());
 		assertTrue(getContext().getDatabasePath(Table.DB_FILENAME).exists());
 	}
 
 	public void testConstructor_createTable() {
-		String tableName = TableColumnWithAnnotations.class.getSimpleName();
-		new TableColumnWithAnnotations(db);
+		String tableName = TableExample.class.getSimpleName();
+		new TableExample(db);
 		assertEquals(1, getTableCount(tableName));
 	}
 
 	public void testConstructor_tableCreated_noTableInDb() {
-		String tableName = TableColumnWithAnnotations.class.getSimpleName();
+		String tableName = TableExample.class.getSimpleName();
 		Table.createdTables.add(tableName);
-		new TableColumnWithAnnotations(db);
+		new TableExample(db);
+		assertEquals(0, getTableCount(tableName));
+	}
+
+	public void testConstructor_tableWithNewId_callOnUpgrade() {
+		String tableName = TableExample.class.getSimpleName();
+
+		Metadata metadata = new Metadata(db);
+		metadata.setTable(tableName).setTableVersion(1).save();
+
+		new TableExample(db);
 		assertEquals(0, getTableCount(tableName));
 	}
 

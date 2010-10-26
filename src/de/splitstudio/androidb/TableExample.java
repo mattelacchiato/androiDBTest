@@ -17,20 +17,23 @@ package de.splitstudio.androidb;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import de.splitstudio.androidb.Table;
+import de.splitstudio.androidb.annotation.Column;
 import de.splitstudio.androidb.annotation.TableMetaData;
 
-@TableMetaData(version = 1)
-public class TableColumnWithAnnotations extends Table {
+@TableMetaData(version = 4)
+public class TableExample extends Table {
 
-	public static final String SQL = "CREATE TABLE IF NOT EXISTS TableColumnWithAnnotations ( _id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)";
-
-	public TableColumnWithAnnotations(final SQLiteDatabase db) {
+	public TableExample(final SQLiteDatabase db) {
 		super(db);
 	}
 
-	public TableColumnWithAnnotations(final Context context) {
+	public TableExample(final Context context) {
 		super(context);
 	}
 
+	@Column
+	String text;
+
+	@Column
+	float amount;
 }
