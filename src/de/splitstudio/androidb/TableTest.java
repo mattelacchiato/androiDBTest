@@ -87,6 +87,29 @@ public class TableTest extends AndroidTestCase {
 		assertEquals(3, c.getCount());
 	}
 
+	public void test_find_withoutId_false() {
+		assertEquals(false, new TableExample(db).find());
+	}
+
+	public void test_find_withoutZeroId_false() {
+		TableExample table = new TableExample(db);
+		table._id = 0L;
+		assertEquals(false, table.find());
+	}
+
+	public void test_find_withId_trueAndFilled() {
+		TableExample tableObject = new TableExample(db);
+		tableObject.amount = 3.14f;
+		tableObject.text = "foo";
+		tableObject.save();
+		Long id = tableObject._id;
+
+		Table tableDB = new TableExample(db);
+		tableDB.find(id);
+
+		assertEquals(tableObject, tableDB);
+	}
+
 	private int getTablesInMetadataCount(final String table) {
 		String sql = String.format("SELECT name FROM sqlite_master WHERE type='table' and name='%s'", table);
 		Cursor c = db.rawQuery(sql, null);
