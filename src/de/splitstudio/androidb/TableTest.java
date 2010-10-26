@@ -144,6 +144,23 @@ public class TableTest extends AndroidTestCase {
 		assertEquals(true, tableExample.delete());
 	}
 
+	public void test_update_nullId_false() {
+		assertEquals(false, new TableExample(db).update());
+	}
+
+	public void test_update_withIdInDb_true() {
+		TableExample table = new TableExample(db);
+		table._id = 42L;
+		table.insert();
+
+		table.amount = 3.14f;
+		assertEquals(true, table.update());
+
+		table = new TableExample(db);
+		table.find(42L);
+		assertEquals(3.14f, table.amount);
+	}
+
 	private int getTablesInMetadataCount(final String table) {
 		String sql = String.format("SELECT name FROM sqlite_master WHERE type='table' and name='%s'", table);
 		Cursor c = db.rawQuery(sql, null);
