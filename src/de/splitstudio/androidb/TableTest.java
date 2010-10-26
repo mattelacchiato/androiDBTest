@@ -110,6 +110,23 @@ public class TableTest extends AndroidTestCase {
 		assertEquals(tableObject, tableDB);
 	}
 
+	public void test_insert_allColumnsInserted() {
+		float amount = 3.14f;
+		String text = "foo";
+		TableExample tableObject = new TableExample(db);
+		tableObject.amount = amount;
+		tableObject.text = text;
+		tableObject.insert();
+		Long id = tableObject._id;
+
+		tableObject = new TableExample(db);
+		tableObject.find(id);
+
+		assertEquals(amount, tableObject.amount);
+		assertEquals(id, tableObject._id);
+		assertEquals(text, tableObject.text);
+	}
+
 	private int getTablesInMetadataCount(final String table) {
 		String sql = String.format("SELECT name FROM sqlite_master WHERE type='table' and name='%s'", table);
 		Cursor c = db.rawQuery(sql, null);
