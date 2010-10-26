@@ -104,7 +104,7 @@ public class TableTest extends AndroidTestCase {
 		tableObject.save();
 		Long id = tableObject._id;
 
-		Table tableDB = new TableExample(db);
+		TableExample tableDB = new TableExample(db);
 		tableDB.find(id);
 
 		assertEquals(tableObject, tableDB);
@@ -159,6 +159,58 @@ public class TableTest extends AndroidTestCase {
 		table = new TableExample(db);
 		table.find(42L);
 		assertEquals(3.14f, table.amount);
+	}
+
+	public void test_save_noId_insert() {
+		TableExample table = new TableExample(db);
+		table.save();
+		table = new TableExample(db);
+		table.save();
+		assertEquals(2, table.all().getCount());
+	}
+
+	public void test_save_id_update() {
+		TableExample table = new TableExample(db);
+		table.save();
+		table.save();
+		assertEquals(1, table.all().getCount());
+	}
+
+	public void test_drop_dropExistingTable_droppedAndRemovedFromMemory() {
+		TableExample table = new TableExample(db);
+		table.drop();
+		assertEquals(0, getTablesInMetadataCount(table.getTableName()));
+		assertEquals(false, Table.createdTables.contains(table.getClass()));
+	}
+
+	public void test_drop_dropNotExistingTable_noOneCares() {
+		TableExample table = new TableExample(db);
+		table.drop();
+		table.drop();
+	}
+
+	public void equals_equalTable_true() {
+		TableExample table1 = new TableExample(db);
+		TableExample table2 = new TableExample(db);
+		table1._id = 42L;
+		table1.amount = 3.14f;
+		table1.text = new String("foo");
+		table2._id = 42L;
+		table2.amount = 3.14f;
+		table2.text = new String("foo");
+		assertEquals(table1, table2);
+	}
+
+	public void equals_unequalTable_false() {
+		TableExample table1 = new TableExample(db);
+		TableExample table2 = new TableExample(db);
+		table1._id = 42L;
+		table1.amount = 3.14f;
+		table1.text = new String("foo");
+		table2._id = 42L;
+		table2.amount = 3.14001f;
+		table2.text = new String("foo");
+		assertEquals(false, table1.equals(table2));
 	}
 
 	private int getTablesInMetadataCount(final String table) {
