@@ -39,14 +39,14 @@ public class TableTest extends AndroidTestCase {
 
 	public void testConstructor_createTable() {
 		new TableExample(db);
-		assertEquals(1, TestHelper.getTablesInMetadataCount(TABLE_NAME, db));
+		assertEquals(1, TestHelper.getTableCount(TABLE_NAME, db));
 	}
 
 	public void testConstructor_tableCreated_noTableInDb() {
 		table.drop();
 		Table.createdTables.add(TABLE_NAME);
 		new TableExample(db);
-		assertEquals(0, TestHelper.getTablesInMetadataCount(TABLE_NAME, db));
+		assertEquals(0, TestHelper.getTableCount(TABLE_NAME, db));
 	}
 
 	public void testConstructor_tableWithNewId_callOnUpgrade() {
@@ -55,7 +55,7 @@ public class TableTest extends AndroidTestCase {
 		metadata.setTable(TABLE_NAME).setTableVersion(1).save();
 
 		new TableExample(db);
-		assertEquals(0, TestHelper.getTablesInMetadataCount(TABLE_NAME, db));
+		assertEquals(0, TestHelper.getTableCount(TABLE_NAME, db));
 	}
 
 	public void test_isNew_withId_false() {
@@ -75,6 +75,7 @@ public class TableTest extends AndroidTestCase {
 	public void test_all_emptyTable_emptyCursor() {
 		Cursor c = table.all();
 		assertEquals(0, c.getCount());
+		c.close();
 	}
 
 	public void test_all_threeRows_threeRows() {
@@ -86,6 +87,7 @@ public class TableTest extends AndroidTestCase {
 
 		Cursor c = table.all();
 		assertEquals(3, c.getCount());
+		c.close();
 	}
 
 	public void test_find_withoutId_false() {
@@ -171,7 +173,7 @@ public class TableTest extends AndroidTestCase {
 
 	public void test_drop_dropExistingTable_droppedAndRemovedFromMemoryAndMetadata() {
 		table.drop();
-		assertEquals(0, TestHelper.getTablesInMetadataCount(table.getTableName(), db));
+		assertEquals(0, TestHelper.getTableCount(table.getTableName(), db));
 		assertEquals(false, Table.createdTables.contains(table.getClass()));
 		assertEquals(false, new Metadata(db).findByName(TABLE_NAME));
 	}
@@ -235,6 +237,7 @@ public class TableTest extends AndroidTestCase {
 	public void test_fillFirst_emptyCursor_false() {
 		Cursor c = table.all();
 		assertEquals(false, table.fillFirst(c));
+		c.close();
 	}
 
 	public void test_fillFirst_cursorMultipleRows_trueAndFirstFilled() {
@@ -245,6 +248,7 @@ public class TableTest extends AndroidTestCase {
 		Cursor c = table.all();
 		assertEquals(true, table.fillFirst(c));
 		assertEquals(1l, (long) table._id);//this cast sucks!
+		c.close();
 	}
 
 	public void test_getColumnNamesAsList() {
