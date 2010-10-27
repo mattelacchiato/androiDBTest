@@ -189,7 +189,7 @@ public class TableTest extends AndroidTestCase {
 		table.drop();
 	}
 
-	public void equals_equalTable_true() {
+	public void test_equals_equalTable_true() {
 		TableExample table1 = new TableExample(db);
 		TableExample table2 = new TableExample(db);
 		table1._id = 42L;
@@ -201,7 +201,7 @@ public class TableTest extends AndroidTestCase {
 		assertEquals(table1, table2);
 	}
 
-	public void equals_unequalTable_false() {
+	public void test_equals_unequalTable_false() {
 		TableExample table1 = new TableExample(db);
 		TableExample table2 = new TableExample(db);
 		table1._id = 42L;
