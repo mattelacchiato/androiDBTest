@@ -1,5 +1,8 @@
 package de.splitstudio.androidb;
 
+import java.util.Arrays;
+import java.util.List;
+
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.test.AndroidTestCase;
@@ -9,6 +12,10 @@ public class TableTest extends AndroidTestCase {
 
 	private SQLiteDatabase db;
 
+	private TableExample table;
+
+	private static final String TABLE_NAME = TableExample.class.getSimpleName();
+
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
@@ -16,6 +23,7 @@ public class TableTest extends AndroidTestCase {
 		getContext().getDatabasePath(dbFilename).delete();
 		Table.createdTables.clear();
 		db = getContext().openOrCreateDatabase(dbFilename, SQLiteDatabase.CREATE_IF_NECESSARY, null);
+		table = new TableExample(db);
 	}
 
 	@Override
@@ -30,54 +38,46 @@ public class TableTest extends AndroidTestCase {
 	}
 
 	public void testConstructor_createTable() {
-		String tableName = TableExample.class.getSimpleName();
 		new TableExample(db);
-		assertEquals(1, getTablesInMetadataCount(tableName));
+		assertEquals(1, TestHelper.getTablesInMetadataCount(TABLE_NAME, db));
 	}
 
 	public void testConstructor_tableCreated_noTableInDb() {
-		String tableName = TableExample.class.getSimpleName();
-		Table.createdTables.add(tableName);
+		table.drop();
+		Table.createdTables.add(TABLE_NAME);
 		new TableExample(db);
-		assertEquals(0, getTablesInMetadataCount(tableName));
+		assertEquals(0, TestHelper.getTablesInMetadataCount(TABLE_NAME, db));
 	}
 
 	public void testConstructor_tableWithNewId_callOnUpgrade() {
-		String tableName = TableExample.class.getSimpleName();
-
+		table.drop();
 		Metadata metadata = new Metadata(db);
-		metadata.setTable(tableName).setTableVersion(1).save();
+		metadata.setTable(TABLE_NAME).setTableVersion(1).save();
 
 		new TableExample(db);
-		assertEquals(0, getTablesInMetadataCount(tableName));
+		assertEquals(0, TestHelper.getTablesInMetadataCount(TABLE_NAME, db));
 	}
 
 	public void test_isNew_withId_false() {
-		Table table = new TableExample(db);
 		table._id = 1L;
 		assertEquals(false, table.isNew());
 	}
 
 	public void test_isNew_withoutId_true() {
-		Table table = new TableExample(db);
 		assertEquals(true, table.isNew());
 	}
 
 	public void test_isNew_withZeroId_true() {
-		Table table = new TableExample(db);
 		table._id = 0L;
 		assertEquals(true, table.isNew());
 	}
 
 	public void test_all_emptyTable_emptyCursor() {
-		Table table = new TableExample(db);
 		Cursor c = table.all();
 		assertEquals(0, c.getCount());
 	}
 
 	public void test_all_threeRows_threeRows() {
-		Table table = new TableExample(db);
-
 		table.insert();
 		table._id = null;
 		table.insert();
@@ -89,68 +89,62 @@ public class TableTest extends AndroidTestCase {
 	}
 
 	public void test_find_withoutId_false() {
-		assertEquals(false, new TableExample(db).find());
+		assertEquals(false, table.find());
 	}
 
 	public void test_find_withoutZeroId_false() {
-		TableExample table = new TableExample(db);
 		table._id = 0L;
 		assertEquals(false, table.find());
 	}
 
 	public void test_find_withId_trueAndFilled() {
-		TableExample tableObject = new TableExample(db);
-		tableObject.amount = 3.14f;
-		tableObject.text = "foo";
-		tableObject.save();
-		Long id = tableObject._id;
+		table.amount = 3.14f;
+		table.text = "foo";
+		table.save();
+		Long id = table._id;
 
 		TableExample tableDB = new TableExample(db);
 		tableDB.find(id);
 
-		assertEquals(tableObject, tableDB);
+		assertEquals(table, tableDB);
 	}
 
 	public void test_insert_allColumnsInserted() {
 		float amount = 3.14f;
 		String text = "foo";
-		TableExample tableObject = new TableExample(db);
-		tableObject.amount = amount;
-		tableObject.text = text;
-		tableObject.insert();
-		Long id = tableObject._id;
+		table.amount = amount;
+		table.text = text;
+		table.insert();
+		Long id = table._id;
 
-		tableObject = new TableExample(db);
-		tableObject.find(id);
+		table = new TableExample(db);
+		table.find(id);
 
-		assertEquals(amount, tableObject.amount);
-		assertEquals(id, tableObject._id);
-		assertEquals(text, tableObject.text);
+		assertEquals(amount, table.amount);
+		assertEquals(id, table._id);
+		assertEquals(text, table.text);
 	}
 
 	public void test_delete_withoutId_false() {
-		assertEquals(false, new TableExample(db).delete());
+		assertEquals(false, table.delete());
 	}
 
 	public void test_delete_idNotInDb_false() {
-		TableExample tableExample = new TableExample(db);
-		tableExample._id = 42L;
-		assertEquals(false, tableExample.delete());
+		table._id = 42L;
+		assertEquals(false, table.delete());
 	}
 
 	public void test_delete_idInDb_true() {
-		TableExample tableExample = new TableExample(db);
-		tableExample._id = 42L;
-		tableExample.insert();
-		assertEquals(true, tableExample.delete());
+		table._id = 42L;
+		table.insert();
+		assertEquals(true, table.delete());
 	}
 
 	public void test_update_nullId_false() {
-		assertEquals(false, new TableExample(db).update());
+		assertEquals(false, table.update());
 	}
 
 	public void test_update_withIdInDb_true() {
-		TableExample table = new TableExample(db);
 		table._id = 42L;
 		table.insert();
 
@@ -163,7 +157,6 @@ public class TableTest extends AndroidTestCase {
 	}
 
 	public void test_save_noId_insert() {
-		TableExample table = new TableExample(db);
 		table.save();
 		table = new TableExample(db);
 		table.save();
@@ -171,47 +164,43 @@ public class TableTest extends AndroidTestCase {
 	}
 
 	public void test_save_id_update() {
-		TableExample table = new TableExample(db);
 		table.save();
 		table.save();
 		assertEquals(1, table.all().getCount());
 	}
 
-	public void test_drop_dropExistingTable_droppedAndRemovedFromMemory() {
-		TableExample table = new TableExample(db);
+	public void test_drop_dropExistingTable_droppedAndRemovedFromMemoryAndMetadata() {
 		table.drop();
-		assertEquals(0, getTablesInMetadataCount(table.getTableName()));
+		assertEquals(0, TestHelper.getTablesInMetadataCount(table.getTableName(), db));
 		assertEquals(false, Table.createdTables.contains(table.getClass()));
+		assertEquals(false, new Metadata(db).findByName(TABLE_NAME));
 	}
 
 	public void test_drop_dropNotExistingTable_noOneCares() {
-		TableExample table = new TableExample(db);
 		table.drop();
 		table.drop();
 	}
 
 	public void test_equals_equalTable_true() {
-		TableExample table1 = new TableExample(db);
 		TableExample table2 = new TableExample(db);
-		table1._id = 42L;
-		table1.amount = 3.14f;
-		table1.text = new String("foo");
+		table._id = 42L;
+		table.amount = 3.14f;
+		table.text = new String("foo");
 		table2._id = 42L;
 		table2.amount = 3.14f;
 		table2.text = new String("foo");
-		assertEquals(table1, table2);
+		assertEquals(table, table2);
 	}
 
 	public void test_equals_unequalTable_false() {
-		TableExample table1 = new TableExample(db);
 		TableExample table2 = new TableExample(db);
-		table1._id = 42L;
-		table1.amount = 3.14f;
-		table1.text = new String("foo");
+		table._id = 42L;
+		table.amount = 3.14f;
+		table.text = new String("foo");
 		table2._id = 42L;
 		table2.amount = 3.14001f;
 		table2.text = new String("foo");
-		assertEquals(false, table1.equals(table2));
+		assertEquals(false, table.equals(table2));
 	}
 
 	public void test_getVersion_noObjectVersion_exception() {
@@ -244,26 +233,27 @@ public class TableTest extends AndroidTestCase {
 	}
 
 	public void test_fillFirst_emptyCursor_false() {
-		Table table = new TableExample(db);
 		Cursor c = table.all();
 		assertEquals(false, table.fillFirst(c));
 	}
 
 	public void test_fillFirst_cursorMultipleRows_trueAndFirstFilled() {
-		Table table = new TableExample(db);
 		table.insert();
 		table = new TableExample(db);
 		table.insert();
 
 		Cursor c = table.all();
 		assertEquals(true, table.fillFirst(c));
-		assertEquals(1, (long) table._id);//this cast sucks!
+		assertEquals(1l, (long) table._id);//this cast sucks!
 	}
 
-	private int getTablesInMetadataCount(final String table) {
-		String sql = String.format("SELECT name FROM sqlite_master WHERE type='table' and name='%s'", table);
-		Cursor c = db.rawQuery(sql, null);
-		return c.getCount();
+	public void test_getColumnNamesAsList() {
+		List<String> expected = Arrays.asList("_id", "text", "amount");
+		assertEquals(expected, table.getColumnNamesAsList());
+	}
+
+	public void test_getFields_someColumns_someColumns() {
+		assertEquals(3, table.getFields().size());
 	}
 
 }
