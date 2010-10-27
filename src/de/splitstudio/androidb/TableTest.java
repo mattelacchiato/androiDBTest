@@ -3,6 +3,7 @@ package de.splitstudio.androidb;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.test.AndroidTestCase;
+import de.splitstudio.androidb.annotation.TableMetaData;
 
 public class TableTest extends AndroidTestCase {
 
@@ -211,6 +212,52 @@ public class TableTest extends AndroidTestCase {
 		table2.amount = 3.14001f;
 		table2.text = new String("foo");
 		assertEquals(false, table1.equals(table2));
+	}
+
+	public void test_getVersion_noObjectVersion_exception() {
+		class NotVersionedTable extends Table {
+			NotVersionedTable(final SQLiteDatabase db) {
+				super(db);
+			}
+		}
+
+		try {
+			Table noVersion = new NotVersionedTable(db);
+			noVersion.getVersion();
+			fail("Expected to throw IllegalStateException");
+		} catch (IllegalStateException e) {}
+	}
+
+	public void test_getVersion_objectVersionZero_exception() {
+		@TableMetaData(version = 0)
+		class NotVersionedTable extends Table {
+			NotVersionedTable(final SQLiteDatabase db) {
+				super(db);
+			}
+		}
+
+		try {
+			Table noVersion = new NotVersionedTable(db);
+			noVersion.getVersion();
+			fail("Expected to throw IllegalStateException");
+		} catch (IllegalStateException e) {}
+	}
+
+	public void test_fillFirst_emptyCursor_false() {
+		Table table = new TableExample(db);
+		Cursor c = table.all();
+		assertEquals(false, table.fillFirst(c));
+	}
+
+	public void test_fillFirst_cursorMultipleRows_trueAndFirstFilled() {
+		Table table = new TableExample(db);
+		table.insert();
+		table = new TableExample(db);
+		table.insert();
+
+		Cursor c = table.all();
+		assertEquals(true, table.fillFirst(c));
+		assertEquals(1, (long) table._id);//this cast sucks!
 	}
 
 	private int getTablesInMetadataCount(final String table) {
