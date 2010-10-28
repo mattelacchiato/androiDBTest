@@ -3,6 +3,7 @@ package de.splitstudio.androidb;
 import java.util.Arrays;
 import java.util.List;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.test.AndroidTestCase;
@@ -22,14 +23,14 @@ public class TableTest extends AndroidTestCase {
 		String dbFilename = "test.db";
 		getContext().getDatabasePath(dbFilename).delete();
 		Table.createdTables.clear();
-		db = getContext().openOrCreateDatabase(dbFilename, SQLiteDatabase.CREATE_IF_NECESSARY, null);
-		table = new TableExample(db);
+		table = new TableExample(getContext());
+		db = table.getDb();
 	}
 
 	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
-		db.close();
+		table.drop();
 	}
 
 	public void testConstructorWithContext_createDbFile() {
@@ -38,14 +39,13 @@ public class TableTest extends AndroidTestCase {
 	}
 
 	public void testConstructor_createTable() {
-		new TableExample(db);
 		assertEquals(1, TestHelper.getTableCount(TABLE_NAME, db));
 	}
 
 	public void testConstructor_tableCreated_noTableInDb() {
 		table.drop();
 		Table.createdTables.add(TABLE_NAME);
-		new TableExample(db);
+		new TableExample(getContext());
 		assertEquals(0, TestHelper.getTableCount(TABLE_NAME, db));
 	}
 
@@ -54,7 +54,7 @@ public class TableTest extends AndroidTestCase {
 		Metadata metadata = new Metadata(db);
 		metadata.setTable(TABLE_NAME).setTableVersion(1).save();
 
-		new TableExample(db);
+		new TableExample(getContext());
 		assertEquals(0, TestHelper.getTableCount(TABLE_NAME, db));
 	}
 
@@ -105,7 +105,7 @@ public class TableTest extends AndroidTestCase {
 		table.save();
 		Long id = table._id;
 
-		TableExample tableDB = new TableExample(db);
+		TableExample tableDB = new TableExample(getContext());
 		tableDB.find(id);
 
 		assertEquals(table, tableDB);
@@ -119,7 +119,7 @@ public class TableTest extends AndroidTestCase {
 		table.insert();
 		Long id = table._id;
 
-		table = new TableExample(db);
+		table = new TableExample(getContext());
 		table.find(id);
 
 		assertEquals(amount, table.amount);
@@ -153,14 +153,14 @@ public class TableTest extends AndroidTestCase {
 		table.amount = 3.14f;
 		assertEquals(true, table.update());
 
-		table = new TableExample(db);
+		table = new TableExample(getContext());
 		table.find(42L);
 		assertEquals(3.14f, table.amount);
 	}
 
 	public void test_save_noId_insert() {
 		table.save();
-		table = new TableExample(db);
+		table = new TableExample(getContext());
 		table.save();
 		assertEquals(2, table.all().getCount());
 	}
@@ -184,7 +184,7 @@ public class TableTest extends AndroidTestCase {
 	}
 
 	public void test_equals_equalTable_true() {
-		TableExample table2 = new TableExample(db);
+		TableExample table2 = new TableExample(getContext());
 		table._id = 42L;
 		table.amount = 3.14f;
 		table.text = new String("foo");
@@ -195,7 +195,7 @@ public class TableTest extends AndroidTestCase {
 	}
 
 	public void test_equals_unequalTable_false() {
-		TableExample table2 = new TableExample(db);
+		TableExample table2 = new TableExample(getContext());
 		table._id = 42L;
 		table.amount = 3.14f;
 		table.text = new String("foo");
@@ -207,13 +207,13 @@ public class TableTest extends AndroidTestCase {
 
 	public void test_getVersion_noObjectVersion_exception() {
 		class NotVersionedTable extends Table {
-			NotVersionedTable(final SQLiteDatabase db) {
-				super(db);
+			NotVersionedTable(final Context context) {
+				super(context);
 			}
 		}
 
 		try {
-			Table noVersion = new NotVersionedTable(db);
+			Table noVersion = new NotVersionedTable(getContext());
 			noVersion.getVersion();
 			fail("Expected to throw IllegalStateException");
 		} catch (IllegalStateException e) {}
@@ -222,13 +222,13 @@ public class TableTest extends AndroidTestCase {
 	public void test_getVersion_objectVersionZero_exception() {
 		@TableMetaData(version = 0)
 		class NotVersionedTable extends Table {
-			NotVersionedTable(final SQLiteDatabase db) {
-				super(db);
+			NotVersionedTable(final Context context) {
+				super(context);
 			}
 		}
 
 		try {
-			Table noVersion = new NotVersionedTable(db);
+			Table noVersion = new NotVersionedTable(getContext());
 			noVersion.getVersion();
 			fail("Expected to throw IllegalStateException");
 		} catch (IllegalStateException e) {}
@@ -242,7 +242,7 @@ public class TableTest extends AndroidTestCase {
 
 	public void test_fillFirst_cursorMultipleRows_trueAndFirstFilled() {
 		table.insert();
-		table = new TableExample(db);
+		table = new TableExample(getContext());
 		table.insert();
 
 		Cursor c = table.all();

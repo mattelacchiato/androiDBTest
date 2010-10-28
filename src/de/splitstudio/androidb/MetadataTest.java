@@ -2,7 +2,6 @@ package de.splitstudio.androidb;
 
 import java.io.File;
 
-
 import android.database.sqlite.SQLiteDatabase;
 import android.test.AndroidTestCase;
 
@@ -32,7 +31,7 @@ public class MetadataTest extends AndroidTestCase {
 	}
 
 	public void testConstructor_createMetadataTable() {
-		Table table = new TableExample(db);
+		Table table = new TableExample(getContext());
 		Metadata metadata = new Metadata(db);
 		assertTrue(metadata.findByName("TableColumnWithAnnotations"));
 		assertEquals(table.getVersion(), metadata.getTableVersion());
