@@ -260,4 +260,9 @@ public class TableTest extends AndroidTestCase {
 		assertEquals(3, table.getFields().size());
 	}
 
+	public void test_insertWithSQLInjection_gotEscaped() {
+		table.text = "'foobar;";
+		assertTrue(table.insert());
+	}
+
 }
