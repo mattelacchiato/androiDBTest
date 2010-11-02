@@ -50,12 +50,16 @@ public class TableTest extends AndroidTestCase {
 	}
 
 	public void testConstructor_tableWithNewId_callOnUpgrade() {
-		table.drop();
+		table.save();
 		Metadata metadata = new Metadata(db);
-		metadata.setTable(TABLE_NAME).setTableVersion(1).save();
+		metadata.findByName(TABLE_NAME);
+		metadata.setTableVersion(1).save();
 
-		new TableExample(getContext());
-		assertEquals(0, TestHelper.getTableCount(TABLE_NAME, db));
+		table = new TableExample(getContext());
+		Cursor cursor = table.all();
+		assertEquals(0, cursor.getCount());
+		cursor.close();
+	}
 
 	public void testConstructor_createIndex() {
 		Cursor c = db.query("SQLITE_MASTER", new String[] { "name" }, "type='index'", null, null, null, null);
@@ -169,13 +173,17 @@ public class TableTest extends AndroidTestCase {
 		table.save();
 		table = new TableExample(getContext());
 		table.save();
-		assertEquals(2, table.all().getCount());
+		Cursor all = table.all();
+		assertEquals(2, all.getCount());
+		all.close();
 	}
 
 	public void test_save_id_update() {
 		table.save();
 		table.save();
-		assertEquals(1, table.all().getCount());
+		Cursor all = table.all();
+		assertEquals(1, all.getCount());
+		all.close();
 	}
 
 	public void test_drop_dropExistingTable_droppedAndRemovedFromMemoryAndMetadata() {
@@ -243,7 +251,7 @@ public class TableTest extends AndroidTestCase {
 
 	public void test_fillFirst_emptyCursor_false() {
 		Cursor c = table.all();
-		assertEquals(false, table.fillFirst(c));
+		assertEquals(false, table.fillFirstAndClose(c));
 		c.close();
 	}
 
@@ -253,7 +261,7 @@ public class TableTest extends AndroidTestCase {
 		table.insert();
 
 		Cursor c = table.all();
-		assertEquals(true, table.fillFirst(c));
+		assertEquals(true, table.fillFirstAndClose(c));
 		assertEquals(1l, (long) table._id);//this cast sucks!
 		c.close();
 	}
@@ -267,7 +275,7 @@ public class TableTest extends AndroidTestCase {
 		assertEquals(3, table.getFields().size());
 	}
 
-	public void test_insertWithSQLInjection_gotEscaped() {
+	public void test_insert_withSQLInjection_gotEscaped() {
 		table.text = "'foobar;";
 		assertTrue(table.insert());
 	}
