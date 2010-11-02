@@ -280,4 +280,25 @@ public class TableTest extends AndroidTestCase {
 		assertTrue(table.insert());
 	}
 
+	public void test_fill_emptyCursor_false() {
+		TableExample tableExample = new TableExample(getContext());
+		Cursor all = tableExample.all();
+		assertEquals(false, tableExample.fill(all));
+		all.close();
+	}
+
+	public void test_fill_manyCursorEntries_trueAndFilled() {
+		table.amount = 3.14f;
+		table.save();
+		table = new TableExample(getContext());
+		table.amount = 42;
+		table.save();
+
+		Cursor cursor = table.all();
+		cursor.move(2);
+		assertEquals(true, table.fill(cursor));
+		assertEquals(42f, table.amount);
+		cursor.close();
+	}
+
 }
