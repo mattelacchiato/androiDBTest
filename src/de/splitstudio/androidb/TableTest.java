@@ -56,6 +56,13 @@ public class TableTest extends AndroidTestCase {
 
 		new TableExample(getContext());
 		assertEquals(0, TestHelper.getTableCount(TABLE_NAME, db));
+
+	public void testConstructor_createIndex() {
+		Cursor c = db.query("SQLITE_MASTER", new String[] { "name" }, "type='index'", null, null, null, null);
+		assertEquals(1, c.getCount());
+		assertEquals(true, c.moveToFirst());
+		assertEquals("index_TableExample", c.getString(c.getColumnIndex("name")));
+		c.close();
 	}
 
 	public void test_isNew_withId_false() {

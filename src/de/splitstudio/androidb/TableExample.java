@@ -29,6 +29,6 @@ public class TableExample extends Table {
 	@Column
 	String text;
 
-	@Column
+	@Column(index = true)
 	float amount;
 }
