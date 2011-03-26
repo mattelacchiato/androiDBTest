@@ -29,6 +29,6 @@ public class TableExample extends Table {
 	@Column
 	String text;
 
-	@Column(index = true)
+	@Column(indexNames = { "idx_amount" })
 	float amount;
 }
