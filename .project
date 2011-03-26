@@ -31,4 +31,11 @@
 		<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>androidb_src_main_java</name>
+			<type>2</type>
+			<locationURI>_android_androidb_c85e97d3/src/main/java</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>

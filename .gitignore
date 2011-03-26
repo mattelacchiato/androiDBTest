@@ -1,3 +1,4 @@
 bin
 gen
 *.log
+/androidb_src_main_java
