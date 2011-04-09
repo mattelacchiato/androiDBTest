@@ -16,6 +16,7 @@
 package de.splitstudio.androidb;
 
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 import de.splitstudio.androidb.annotation.Column;
 import de.splitstudio.androidb.annotation.TableMetaData;
 
@@ -24,6 +25,10 @@ public class TableExample extends Table {
 
 	public TableExample(final Context context) {
 		super(context);
+	}
+
+	public TableExample(final SQLiteDatabase db) {
+		super(db);
 	}
 
 	@Column

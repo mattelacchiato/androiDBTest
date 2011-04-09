@@ -301,4 +301,16 @@ public class TableTest extends AndroidTestCase {
 		cursor.close();
 	}
 
+	public void test_fillAll_filled() {
+		table.amount = 2f;
+		table.save();
+		table = new TableExample(getContext());
+		table.amount = 3f;
+		table.save();
+
+		Cursor c = table.all();
+		List<TableExample> tables = Table.fillAll(TableExample.class, c);
+		assertEquals(2f, tables.get(0).amount);
+		assertEquals(3f, tables.get(1).amount);
+	}
 }
