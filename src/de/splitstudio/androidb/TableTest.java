@@ -20,11 +20,12 @@ public class TableTest extends AndroidTestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
+		Table.openOrCreateDB(getContext());
 		String dbFilename = "test.db";
 		getContext().getDatabasePath(dbFilename).delete();
 		Table.createdTables.clear();
-		table = new TableExample(getContext());
-		db = table.getDb();
+		table = new TableExample();
+		db = Table.db;
 	}
 
 	@Override
@@ -34,7 +35,7 @@ public class TableTest extends AndroidTestCase {
 	}
 
 	public void testConstructorWithContext_createDbFile() {
-		new TableExample(getContext());
+		new TableExample();
 		assertTrue(getContext().getDatabasePath(Table.DB_FILENAME).exists());
 	}
 
@@ -45,17 +46,17 @@ public class TableTest extends AndroidTestCase {
 	public void testConstructor_tableCreated_noTableInDb() {
 		table.drop();
 		Table.createdTables.add(TABLE_NAME);
-		new TableExample(getContext());
+		new TableExample();
 		assertEquals(0, TestHelper.getTableCount(TABLE_NAME, db));
 	}
 
 	public void testConstructor_tableWithNewId_callOnUpgrade() {
 		table.save();
-		Metadata metadata = new Metadata(db);
+		Metadata metadata = new Metadata();
 		metadata.findByName(TABLE_NAME);
 		metadata.setTableVersion(1).save();
 
-		table = new TableExample(getContext());
+		table = new TableExample();
 		Cursor cursor = table.all();
 		assertEquals(0, cursor.getCount());
 		cursor.close();
@@ -116,7 +117,7 @@ public class TableTest extends AndroidTestCase {
 		table.save();
 		Long id = table._id;
 
-		TableExample tableDB = new TableExample(getContext());
+		TableExample tableDB = new TableExample();
 		tableDB.find(id);
 
 		assertEquals(table, tableDB);
@@ -130,7 +131,7 @@ public class TableTest extends AndroidTestCase {
 		table.insert();
 		Long id = table._id;
 
-		table = new TableExample(getContext());
+		table = new TableExample();
 		table.find(id);
 
 		assertEquals(amount, table.amount);
@@ -164,14 +165,14 @@ public class TableTest extends AndroidTestCase {
 		table.amount = 3.14f;
 		assertEquals(true, table.update());
 
-		table = new TableExample(getContext());
+		table = new TableExample();
 		table.find(42L);
 		assertEquals(3.14f, table.amount);
 	}
 
 	public void test_save_noId_insert() {
 		table.save();
-		table = new TableExample(getContext());
+		table = new TableExample();
 		table.save();
 		Cursor all = table.all();
 		assertEquals(2, all.getCount());
@@ -190,7 +191,7 @@ public class TableTest extends AndroidTestCase {
 		table.drop();
 		assertEquals(0, TestHelper.getTableCount(table.getTableName(), db));
 		assertEquals(false, Table.createdTables.contains(table.getClass()));
-		assertEquals(false, new Metadata(db).findByName(TABLE_NAME));
+		assertEquals(false, new Metadata().findByName(TABLE_NAME));
 	}
 
 	public void test_drop_dropNotExistingTable_noOneCares() {
@@ -199,7 +200,7 @@ public class TableTest extends AndroidTestCase {
 	}
 
 	public void test_equals_equalTable_true() {
-		TableExample table2 = new TableExample(getContext());
+		TableExample table2 = new TableExample();
 		table._id = 42L;
 		table.amount = 3.14f;
 		table.text = new String("foo");
@@ -210,7 +211,7 @@ public class TableTest extends AndroidTestCase {
 	}
 
 	public void test_equals_unequalTable_false() {
-		TableExample table2 = new TableExample(getContext());
+		TableExample table2 = new TableExample();
 		table._id = 42L;
 		table.amount = 3.14f;
 		table.text = new String("foo");
@@ -223,7 +224,7 @@ public class TableTest extends AndroidTestCase {
 	public void test_getVersion_noObjectVersion_exception() {
 		class NotVersionedTable extends Table {
 			NotVersionedTable(final Context context) {
-				super(context);
+				super();
 			}
 		}
 
@@ -238,7 +239,7 @@ public class TableTest extends AndroidTestCase {
 		@TableMetaData(version = 0)
 		class NotVersionedTable extends Table {
 			NotVersionedTable(final Context context) {
-				super(context);
+				super();
 			}
 		}
 
@@ -257,7 +258,7 @@ public class TableTest extends AndroidTestCase {
 
 	public void test_fillFirst_cursorMultipleRows_trueAndFirstFilled() {
 		table.insert();
-		table = new TableExample(getContext());
+		table = new TableExample();
 		table.insert();
 
 		Cursor c = table.all();
@@ -281,7 +282,7 @@ public class TableTest extends AndroidTestCase {
 	}
 
 	public void test_fill_emptyCursor_false() {
-		TableExample tableExample = new TableExample(getContext());
+		TableExample tableExample = new TableExample();
 		Cursor all = tableExample.all();
 		assertEquals(false, tableExample.fill(all));
 		all.close();
@@ -290,7 +291,7 @@ public class TableTest extends AndroidTestCase {
 	public void test_fill_manyCursorEntries_trueAndFilled() {
 		table.amount = 3.14f;
 		table.save();
-		table = new TableExample(getContext());
+		table = new TableExample();
 		table.amount = 42;
 		table.save();
 
@@ -304,7 +305,7 @@ public class TableTest extends AndroidTestCase {
 	public void test_fillAll_filled() {
 		table.amount = 2f;
 		table.save();
-		table = new TableExample(getContext());
+		table = new TableExample();
 		table.amount = 3f;
 		table.save();
 

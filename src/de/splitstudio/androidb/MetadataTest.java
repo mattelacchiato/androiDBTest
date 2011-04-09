@@ -17,7 +17,7 @@ public class MetadataTest extends AndroidTestCase {
 		String dbFilename = "test.db";
 		dbFile = getContext().getDatabasePath(dbFilename);
 		dbFile.delete();
-		db = getContext().openOrCreateDatabase(dbFilename, SQLiteDatabase.CREATE_IF_NECESSARY, null);
+		Table.openOrCreateDB(getContext());
 		assertTrue(db.isOpen());
 		assertFalse(db.isReadOnly());
 		//assertTrue(db.isDbLockedByCurrentThread());
@@ -31,8 +31,8 @@ public class MetadataTest extends AndroidTestCase {
 	}
 
 	public void testConstructor_createMetadataTable() {
-		Table table = new TableExample(getContext());
-		Metadata metadata = new Metadata(db);
+		Table table = new TableExample();
+		Metadata metadata = new Metadata();
 		assertTrue(metadata.findByName("TableColumnWithAnnotations"));
 		assertEquals(table.getVersion(), metadata.getTableVersion());
 	}
