@@ -269,7 +269,7 @@ public class TableTest extends AndroidTestCase {
 
 	public void test_getColumnNamesAsList() {
 		List<String> expected = Arrays.asList("_id", "text", "amount");
-		assertEquals(expected, table.getColumnNamesAsList());
+		assertEquals(expected, Table.getColumnNamesAsList(table.getClass()));
 	}
 
 	public void test_getFields_someColumns_someColumns() {
