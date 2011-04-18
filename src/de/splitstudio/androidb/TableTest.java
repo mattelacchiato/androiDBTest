@@ -25,7 +25,7 @@ public class TableTest extends AndroidTestCase {
 		getContext().getDatabasePath(dbFilename).delete();
 		Table.createdTables.clear();
 		table = new TableExample();
-		db = Table.db;
+		db = Table.getDb();
 	}
 
 	@Override
